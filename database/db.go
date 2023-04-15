@@ -14,7 +14,7 @@ var (
 	user     = "postgres"
 	password = "pwd"
 	dbName   = "hacktiv8_marketplace"
-	port     = 5433
+	port     = 5432
 	db       *gorm.DB
 	err      error
 )

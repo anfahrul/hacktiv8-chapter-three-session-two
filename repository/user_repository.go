@@ -34,10 +34,25 @@ func (repository *UserRepository) CreateUser(user model.User) (*model.User, erro
 	return &newUser, nil
 }
 
-func (repository *UserRepository) UserCheck(user model.UserLoginRequest) (*model.User, error) {
+func (repository *UserRepository) UserCheck(userId string) (*model.User, error) {
 	userResult := model.User{}
 
-	err := repository.DB.Debug().Where("email = ?", user.Email).Take(&userResult).Error
+	err := repository.DB.Debug().Where("user_id = ?", userId).Take(&userResult).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, err
+		}
+
+		return nil, err
+	}
+
+	return &userResult, nil
+}
+
+func (repository *UserRepository) UserCheckByEmail(email string) (*model.User, error) {
+	userResult := model.User{}
+
+	err := repository.DB.Debug().Where("email = ?", email).Take(&userResult).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, err

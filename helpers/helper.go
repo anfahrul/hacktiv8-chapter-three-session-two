@@ -2,7 +2,6 @@ package helpers
 
 import (
 	"fmt"
-	model "hacktiv8-chapter-three-session-two/models"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -10,7 +9,8 @@ import (
 )
 
 type MyClaims struct {
-	User *model.User
+	UserID string
+	Role   bool
 	jwt.StandardClaims
 }
 
@@ -37,7 +37,8 @@ func PasswordIsMatch(plaintPassword, hashedPassword string) bool {
 func GenerateToken(myClaims MyClaims) (string, error) {
 	tokenExpirationTime := time.Now().Add(time.Hour * 1)
 	claims := MyClaims{
-		User: myClaims.User,
+		UserID: myClaims.UserID,
+		Role:   myClaims.Role,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: tokenExpirationTime.Unix(),
 		},

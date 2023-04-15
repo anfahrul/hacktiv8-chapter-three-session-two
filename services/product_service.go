@@ -1,6 +1,7 @@
 package services
 
 import (
+	"errors"
 	model "hacktiv8-chapter-three-session-two/models"
 	"hacktiv8-chapter-three-session-two/repository"
 
@@ -19,10 +20,10 @@ func NewProductService(productRepository repository.ProductRepository, userRepos
 	}
 }
 
-func (service *ProductService) CreateProduct(request model.ProductCreateRequest, email string) (model.ProductCreateResponse, error) {
+func (service *ProductService) CreateProduct(request model.ProductCreateRequest, userId string) (model.ProductCreateResponse, error) {
 	productID := uuid.New()
 
-	userRes, err := service.userRepository.UserCheck(model.UserLoginRequest{Email: email})
+	userRes, err := service.userRepository.UserCheck(userId)
 	if err != nil {
 		return model.ProductCreateResponse{}, err
 	}
@@ -49,8 +50,8 @@ func (service *ProductService) CreateProduct(request model.ProductCreateRequest,
 	return response, nil
 }
 
-func (service *ProductService) GetProductByUserID(email string) ([]model.ProductResponse, error) {
-	userRes, err := service.userRepository.UserCheck(model.UserLoginRequest{Email: email})
+func (service *ProductService) GetProductByUserID(userId string) ([]model.ProductResponse, error) {
+	userRes, err := service.userRepository.UserCheck(userId)
 	if err != nil {
 		return []model.ProductResponse{}, err
 	}
@@ -112,29 +113,46 @@ func (service *ProductService) DeleteProduct(productID string) error {
 	return nil
 }
 
-func (service *ProductService) UpdatedProduct(productID string, request model.ProductUpdateRequest) (model.ProductResponse, error) {
-	result, err := service.productRepository.FindProduct(productID)
+func (service *ProductService) UpdatedProduct(productID string, request model.ProductUpdateRequest, userId string) (model.ProductResponse, error) {
+	resultProduct, err := service.productRepository.FindProduct(productID)
+	if err != nil {
+		return model.ProductResponse{}, err
+	}
+
+	resultUser, err := service.userRepository.UserCheck(userId)
 	if err != nil {
 		return model.ProductResponse{}, err
 	}
 
 	updatedProductReq := &model.Product{
-		ProductID:   result.ProductID,
+		ProductID:   resultProduct.ProductID,
 		Title:       request.Title,
 		Description: request.Description,
 	}
 
-	updateResult, err := service.productRepository.UpdateProduct(*updatedProductReq)
-	if err != nil {
-		return model.ProductResponse{}, err
+	var updateResult model.Product
+	if resultUser.Role == true {
+		updateResult, err = service.productRepository.UpdateProduct(*updatedProductReq)
+		if err != nil {
+			return model.ProductResponse{}, err
+		}
+	} else {
+		if resultUser.UserID == resultProduct.UserID {
+			updateResult, err = service.productRepository.UpdateProduct(*updatedProductReq)
+			if err != nil {
+				return model.ProductResponse{}, err
+			}
+		} else {
+			return model.ProductResponse{}, errors.New("Unauthorized")
+		}
 	}
 
 	response := model.ProductResponse{
 		ProductID:   updateResult.ProductID,
 		Title:       updateResult.Title,
 		Description: updateResult.Description,
-		UserID:      result.UserID,
-		CreatedAt:   result.CreatedAt.String(),
+		UserID:      resultUser.UserID,
+		CreatedAt:   updateResult.CreatedAt.String(),
 		UpdatedAt:   updateResult.UpdatedAt.String(),
 	}
 

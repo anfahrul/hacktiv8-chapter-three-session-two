@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	model "hacktiv8-chapter-three-session-two/models"
 	"hacktiv8-chapter-three-session-two/services"
 	"net/http"
@@ -29,15 +28,15 @@ func (controller *ProductController) CreateProduct(c *gin.Context) {
 		return
 	}
 
-	email, emailIsExist := c.Get("email")
-	if !emailIsExist {
+	userId, userIsExist := c.Get("user_id")
+	if !userIsExist {
 		c.AbortWithStatusJSON(http.StatusBadRequest, model.ErrorResponse{
 			Err: "Unauthorized",
 		})
 		return
 	}
 
-	response, err := controller.productService.CreateProduct(newProduct, email.(string))
+	response, err := controller.productService.CreateProduct(newProduct, userId.(string))
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, model.ErrorResponse{
 			Err: err.Error(),
@@ -63,16 +62,15 @@ func (controller *ProductController) GetProduct(c *gin.Context) {
 	}
 
 	if role.(bool) == false {
-		fmt.Println("masuk ke sini")
-		email, emailIsExist := c.Get("email")
-		if !emailIsExist {
+		userId, userIsExist := c.Get("user_id")
+		if !userIsExist {
 			c.AbortWithStatusJSON(http.StatusBadRequest, model.ErrorResponse{
 				Err: "Unauthorized",
 			})
 			return
 		}
 
-		response, err := controller.productService.GetProductByUserID(email.(string))
+		response, err := controller.productService.GetProductByUserID(userId.(string))
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, model.ErrorResponse{
 				Err: err.Error(),
@@ -111,6 +109,14 @@ func (controller *ProductController) DeleteProduct(c *gin.Context) {
 }
 
 func (controller *ProductController) UpdateProduct(c *gin.Context) {
+	userId, userIsExist := c.Get("user_id")
+	if !userIsExist {
+		c.AbortWithStatusJSON(http.StatusBadRequest, model.ErrorResponse{
+			Err: "Unauthorized",
+		})
+		return
+	}
+
 	productID := c.Param("product_id")
 	var updatedProductReq model.ProductUpdateRequest
 
@@ -121,7 +127,7 @@ func (controller *ProductController) UpdateProduct(c *gin.Context) {
 		return
 	}
 
-	updatedProductRes, err := controller.productService.UpdatedProduct(productID, updatedProductReq)
+	updatedProductRes, err := controller.productService.UpdatedProduct(productID, updatedProductReq, userId.(string))
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, model.ErrorResponse{
 			Err: err.Error(),

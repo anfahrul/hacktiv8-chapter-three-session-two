@@ -68,7 +68,7 @@ func (service *UserService) CreateNewUser(request model.UserRegisterRequest) (mo
 }
 
 func (service *UserService) Login(request model.UserLoginRequest) (string, error) {
-	result, err := service.UserRepository.UserCheck(request)
+	result, err := service.UserRepository.UserCheckByEmail(request.Email)
 	if err != nil {
 		return "", err
 	}
@@ -79,10 +79,8 @@ func (service *UserService) Login(request model.UserLoginRequest) (string, error
 	}
 
 	myClaim := helpers.MyClaims{
-		User: &model.User{
-			Email: result.Email,
-			Role:  result.Role,
-		},
+		UserID: result.UserID.String(),
+		Role:   result.Role,
 	}
 	jwtToken, err := helpers.GenerateToken(myClaim)
 
