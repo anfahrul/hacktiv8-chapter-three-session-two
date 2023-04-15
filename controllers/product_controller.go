@@ -52,7 +52,19 @@ func (controller *ProductController) CreateProduct(c *gin.Context) {
 	})
 }
 
-func (controller *ProductController) GetProduct(c *gin.Context) {
+func (controller *ProductController) GetAllProduct(c *gin.Context) {
+	response, err := controller.productService.GetAllProduct()
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, model.ErrorResponse{
+			Err: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, response)
+}
+
+func (controller *ProductController) GetProductByRole(c *gin.Context) {
 	role, roleIsExist := c.Get("role")
 	if !roleIsExist {
 		c.AbortWithStatusJSON(http.StatusBadRequest, model.ErrorResponse{
@@ -90,6 +102,36 @@ func (controller *ProductController) GetProduct(c *gin.Context) {
 
 		c.JSON(http.StatusOK, response)
 	}
+}
+
+func (controller *ProductController) GetOneProduct(c *gin.Context) {
+	productID := c.Param("product_id")
+
+	userId, userIsExist := c.Get("user_id")
+	if !userIsExist {
+		c.AbortWithStatusJSON(http.StatusBadRequest, model.ErrorResponse{
+			Err: "Unauthorized",
+		})
+		return
+	}
+
+	role, roleIsExist := c.Get("role")
+	if !roleIsExist {
+		c.AbortWithStatusJSON(http.StatusBadRequest, model.ErrorResponse{
+			Err: "Unauthorized",
+		})
+		return
+	}
+
+	response, err := controller.productService.GetProductByID(productID, userId.(string), role.(bool))
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, model.ErrorResponse{
+			Err: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, response)
 }
 
 func (controller *ProductController) DeleteProduct(c *gin.Context) {

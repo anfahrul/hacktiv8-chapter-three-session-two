@@ -20,10 +20,12 @@ func SetupProductRoute(router *gin.Engine, db *gorm.DB) {
 	productRouter := router.Group("/product", middleware.AuthMiddleware)
 	{
 		productRouter.POST("/", productController.CreateProduct)
-		productRouter.GET("/", productController.GetProduct)
+		productRouter.GET("/", productController.GetProductByRole)
+		productRouter.GET(":product_id", productController.GetOneProduct)
 		productRouter.PUT(":product_id", productController.UpdateProduct)
 		adminRouter := productRouter.Group("/", middleware.AdminMiddleware)
 		{
+			adminRouter.GET("/all", productController.GetAllProduct)
 			adminRouter.DELETE(":product_id", productController.DeleteProduct)
 		}
 	}

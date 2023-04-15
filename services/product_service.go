@@ -77,6 +77,29 @@ func (service *ProductService) GetProductByUserID(userId string) ([]model.Produc
 	return products, nil
 }
 
+func (service *ProductService) GetProductByID(productID string, userID string, role bool) (model.ProductResponse, error) {
+	response, err := service.productRepository.FindProduct(productID)
+	if err != nil {
+		return model.ProductResponse{}, err
+	}
+
+	var product model.ProductResponse
+	if (response.UserID.String() != userID) && (role != true) {
+		return model.ProductResponse{}, errors.New("Unauthorized")
+	} else {
+		product = model.ProductResponse{
+			ProductID:   response.ProductID,
+			Title:       response.Title,
+			Description: response.Description,
+			UserID:      response.UserID,
+			CreatedAt:   response.CreatedAt.String(),
+			UpdatedAt:   response.UpdatedAt.String(),
+		}
+	}
+
+	return product, nil
+}
+
 func (service *ProductService) GetAllProduct() ([]model.ProductResponse, error) {
 	response, err := service.productRepository.GetAllProduct()
 	if err != nil {
