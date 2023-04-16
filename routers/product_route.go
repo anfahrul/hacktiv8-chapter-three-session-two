@@ -14,7 +14,7 @@ import (
 func SetupProductRoute(router *gin.Engine, db *gorm.DB) {
 	productRepository := repository.NewProductRepository(db)
 	userRepository := repository.NewUserRepository(db)
-	productService := services.NewProductService(*productRepository, *userRepository)
+	productService := services.NewProductService(productRepository, userRepository)
 	productController := controllers.NewProductController(*productService)
 
 	productRouter := router.Group("/product", middleware.AuthMiddleware)

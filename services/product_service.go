@@ -4,6 +4,7 @@ import (
 	"errors"
 	model "hacktiv8-chapter-three-session-two/models"
 	"hacktiv8-chapter-three-session-two/repository"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -51,27 +52,29 @@ func (service *ProductService) CreateProduct(request model.ProductCreateRequest,
 }
 
 func (service *ProductService) GetProductByUserID(userId string) ([]model.ProductResponse, error) {
-	userRes, err := service.userRepository.UserCheck(userId)
-	if err != nil {
-		return []model.ProductResponse{}, err
-	}
-
-	response, err := service.productRepository.GetByUserID(userRes.UserID)
+	response, err := service.productRepository.GetByUserID(userId)
 	if err != nil {
 		return []model.ProductResponse{}, err
 	}
 
 	products := []model.ProductResponse{}
 	for _, product := range response {
+		createdAtFormatted := product.CreatedAt.Format(time.DateTime)
+		updatedAtFormatted := product.UpdatedAt.Format(time.DateTime)
+
 		product := model.ProductResponse{
-			ProductID:   product.ProductID,
+			ProductID:   product.ProductID.String(),
 			Title:       product.Title,
 			Description: product.Description,
-			UserID:      product.UserID,
-			CreatedAt:   product.CreatedAt.String(),
-			UpdatedAt:   product.UpdatedAt.String(),
+			UserID:      product.UserID.String(),
+			CreatedAt:   createdAtFormatted,
+			UpdatedAt:   updatedAtFormatted,
 		}
 		products = append(products, product)
+	}
+
+	if len(products) == 0 {
+		return []model.ProductResponse{}, errors.New("Not Found")
 	}
 
 	return products, nil
@@ -87,13 +90,16 @@ func (service *ProductService) GetProductByID(productID string, userID string, r
 	if (response.UserID.String() != userID) && (role != true) {
 		return model.ProductResponse{}, errors.New("Unauthorized")
 	} else {
+		createdAtFormatted := response.CreatedAt.Format(time.DateTime)
+		updatedAtFormatted := response.UpdatedAt.Format(time.DateTime)
+
 		product = model.ProductResponse{
-			ProductID:   response.ProductID,
+			ProductID:   response.ProductID.String(),
 			Title:       response.Title,
 			Description: response.Description,
-			UserID:      response.UserID,
-			CreatedAt:   response.CreatedAt.String(),
-			UpdatedAt:   response.UpdatedAt.String(),
+			UserID:      response.UserID.String(),
+			CreatedAt:   createdAtFormatted,
+			UpdatedAt:   updatedAtFormatted,
 		}
 	}
 
@@ -109,10 +115,10 @@ func (service *ProductService) GetAllProduct() ([]model.ProductResponse, error) 
 	products := []model.ProductResponse{}
 	for _, product := range response {
 		product := model.ProductResponse{
-			ProductID:   product.ProductID,
+			ProductID:   product.ProductID.String(),
 			Title:       product.Title,
 			Description: product.Description,
-			UserID:      product.UserID,
+			UserID:      product.UserID.String(),
 			CreatedAt:   product.CreatedAt.String(),
 			UpdatedAt:   product.UpdatedAt.String(),
 		}
@@ -171,10 +177,10 @@ func (service *ProductService) UpdatedProduct(productID string, request model.Pr
 	}
 
 	response := model.ProductResponse{
-		ProductID:   updateResult.ProductID,
+		ProductID:   updateResult.ProductID.String(),
 		Title:       updateResult.Title,
 		Description: updateResult.Description,
-		UserID:      resultUser.UserID,
+		UserID:      resultUser.UserID.String(),
 		CreatedAt:   updateResult.CreatedAt.String(),
 		UpdatedAt:   updateResult.UpdatedAt.String(),
 	}

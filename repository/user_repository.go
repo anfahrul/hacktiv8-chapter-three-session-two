@@ -7,17 +7,24 @@ import (
 	"gorm.io/gorm"
 )
 
-type UserRepository struct {
+//go:generate mockery --name UserRepository
+type UserRepository interface {
+	CreateUser(user model.User) (*model.User, error)
+	UserCheck(userId string) (*model.User, error)
+	UserCheckByEmail(email string) (*model.User, error)
+}
+
+type UserRepositoryImpl struct {
 	DB *gorm.DB
 }
 
-func NewUserRepository(db *gorm.DB) *UserRepository {
-	return &UserRepository{
+func NewUserRepository(db *gorm.DB) UserRepository {
+	return &UserRepositoryImpl{
 		DB: db,
 	}
 }
 
-func (repository *UserRepository) CreateUser(user model.User) (*model.User, error) {
+func (repository *UserRepositoryImpl) CreateUser(user model.User) (*model.User, error) {
 	newUser := model.User{
 		UserID:   user.UserID,
 		Name:     user.Name,
@@ -34,7 +41,7 @@ func (repository *UserRepository) CreateUser(user model.User) (*model.User, erro
 	return &newUser, nil
 }
 
-func (repository *UserRepository) UserCheck(userId string) (*model.User, error) {
+func (repository *UserRepositoryImpl) UserCheck(userId string) (*model.User, error) {
 	userResult := model.User{}
 
 	err := repository.DB.Debug().Where("user_id = ?", userId).Take(&userResult).Error
@@ -49,7 +56,7 @@ func (repository *UserRepository) UserCheck(userId string) (*model.User, error) 
 	return &userResult, nil
 }
 
-func (repository *UserRepository) UserCheckByEmail(email string) (*model.User, error) {
+func (repository *UserRepositoryImpl) UserCheckByEmail(email string) (*model.User, error) {
 	userResult := model.User{}
 
 	err := repository.DB.Debug().Where("email = ?", email).Take(&userResult).Error

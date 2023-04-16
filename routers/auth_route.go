@@ -11,7 +11,7 @@ import (
 
 func SetupAuthRoute(router *gin.Engine, db *gorm.DB) {
 	userRepository := repository.NewUserRepository(db)
-	userService := services.NewUserService(*userRepository)
+	userService := services.NewUserService(userRepository)
 	userController := controllers.NewUserController(*userService)
 
 	userRouter := router.Group("/users")

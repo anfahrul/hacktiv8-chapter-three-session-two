@@ -34,10 +34,10 @@ type ProductCreateResponse struct {
 }
 
 type ProductResponse struct {
-	ProductID   uuid.UUID `json:"product_id"`
-	Title       string    `json:"title"`
-	Description string    `json:"description"`
-	UserID      uuid.UUID `json:"user_id"`
-	CreatedAt   string    `json:"created_at"`
-	UpdatedAt   string    `json:"updated_at"`
+	ProductID   string `json:"product_id"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	UserID      string `json:"user_id"`
+	CreatedAt   string `json:"created_at"`
+	UpdatedAt   string `json:"updated_at"`
 }
